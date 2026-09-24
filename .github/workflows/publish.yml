@@ -1,0 +1,25 @@
+name: Publish to PyPI
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Mandatory for Trusted Publishing: lets the job mint the short-lived
+      # OIDC token PyPI exchanges for an upload credential. Scoped to this job
+      # rather than the workflow to limit credential exposure.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.10.14'
+      - uses: astral-sh/setup-uv@v10.2.0
+      - run: uv build
+      # No password: PyPI authenticates this workflow through GitHub's OIDC
+      # provider. The publisher is registered on PyPI against owner
+      # phillycivic, repo open-data-philly-downloader, workflow publish.yml.
+      - uses: pypa/gh-action-pypi-publish@release/v1
